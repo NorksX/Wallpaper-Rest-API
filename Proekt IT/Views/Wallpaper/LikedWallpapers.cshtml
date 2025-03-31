@@ -1,0 +1,128 @@
+﻿@model List<Proekt_IT.Models.LikedWallpaper>
+
+@{
+    ViewBag.Title = "Liked Wallpaper";
+}
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Liked Wallpapers</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var likedWallpaper in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card border-light shadow-sm">
+                        @using (Html.BeginForm("GetJson", "Wallpaper", FormMethod.Post, new { @class = "d-block" }))
+                        {
+                            @Html.Hidden("id", likedWallpaper.WallpaperId)
+                            <input type="image" src="@likedWallpaper.ImageUrl" alt="Wallpaper Image" class="card-img-top img-fluid" style="height: 200px; object-fit: cover;" />
+                        }
+                    <div class="card-body text-center">
+                      
+                        <h5 class="card-title">Created by: @likedWallpaper.Creator</h5>
+                        @if (string.IsNullOrEmpty(likedWallpaper.OriginalSource))
+                        {
+                            <button class="btn btn-danger" style="width: auto;" disabled>
+                                Source Unknown
+                            </button>
+                        }
+                        else
+                        {
+                            <a href="@likedWallpaper.OriginalSource" class="btn btn-primary" target="_blank">See Original</a>
+                        }
+
+                        <button type="button" class="btn btn-warning unlike-button" data-id="@likedWallpaper.Id">
+                            <i class="fa fa-star liked"></i> Unlike
+                        </button>
+
+                    </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-center">Сеуште немате лајкнато ниту една позадина</p>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".unlike-button").on("click", function () {
+                var button = $(this);
+                var wallpaperId = button.data("id");
+
+                if (confirm("Are you sure you want to unlike this wallpaper?")) {
+                    $.ajax({
+                        url: "/Wallpaper/UnlikeWallpaper",
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ id: wallpaperId }),
+                        dataType: "json",
+                        success: function (response) {
+                            if (response.success) {
+                                button.closest(".col-md-4").remove(); 
+                                alert(response.message);
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert("There was an error unliking the wallpaper.");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+
+    .card {
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .card-img-top {
+        border-bottom: 1px solid #ddd;
+        transition: transform 0.3s ease;
+    }
+
+        .card-img-top:hover {
+            transform: scale(1.05);
+        }
+
+    .card-body {
+        text-align: center;
+    }
+
+
+    .unlike-button {
+        background: none;
+            border: none;
+        cursor: pointer;
+    }
+
+        .unlike-button .fa-star {
+            font-size: 24px;
+            color: gold; 
+        }
+
+
+</style>

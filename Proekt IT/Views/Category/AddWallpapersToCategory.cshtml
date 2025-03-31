@@ -1,0 +1,33 @@
+﻿@model Proekt_IT.Models.AddLikedToCategory
+
+@{
+    ViewBag.Title = "Add Wallpapers to @Model.CategoryName";
+}
+
+<h2>Add Wallpapers to @Model.CategoryName</h2>
+
+@using (Html.BeginForm("AddWallpapersToCategory", "Category", FormMethod.Post))
+{
+    @Html.HiddenFor(m => m.CategoryId)
+
+    <div class="row">
+        @foreach (var wallpaper in Model.LikedWallpapers)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="@wallpaper.ImageUrl" class="card-img-top" alt="Wallpaper Image" style="height: 200px; object-fit: cover;" />
+                    <div class="card-body text-center">
+                        <h5>@wallpaper.Creator</h5>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="wallpaperIds" value="@wallpaper.Id" id="@wallpaper.Id" />
+                            <label class="form-check-label" for="@wallpaper.Id">Select</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-success">Add the seletcted Wallpapers.</button>
+}

@@ -1,0 +1,141 @@
+﻿@model Proekt_IT.Models.Category
+
+@{
+    ViewBag.Title = "Wallpapers in " + Model.Name;
+}
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #e9ecef;
+        color: #343a40;
+    }
+
+    .container {
+        margin-top: 50px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        margin-bottom: 30px;
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .card-body {
+        text-align: center;
+    }
+
+        .card-body h5 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .card-body p {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+    .btn {
+        margin: 5px;
+        padding: 10px 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+    .btn-warning {
+        background-color: #ffc107;
+        color: #fff;
+    }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+</style>
+
+<h2>Wallpapers in @Model.Name</h2>
+
+@if (Model.LikedWallpapers != null && Model.LikedWallpapers.Any())
+{
+    <div class="row">
+        @foreach (var wallpaper in Model.LikedWallpapers)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="@wallpaper.ImageUrl" class="card-img-top" alt="Wallpaper Image" />
+                    <div class="card-body">
+                        <h5>@wallpaper.Creator</h5>
+                        @if (string.IsNullOrEmpty(wallpaper.OriginalSource))
+                        {
+                            <button class="btn btn-danger" style="width: auto;" disabled>
+                                Source unavailable
+                            </button>
+                        }
+                        else
+                        {
+                            <p>
+                                <a href="@wallpaper.OriginalSource" class="btn btn-primary" target="_blank">See Original</a>
+                            </p>
+                        }
+                        <button type="button" class="btn btn-danger" data-wallpaper-id="@wallpaper.Id" onclick="removeFromCategory(@wallpaper.Id)">
+                            Remove from category
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>There are no wallpapers in this category</p>
+}
+
+@section Scripts {
+    <script>
+        function removeFromCategory(wallpaperId) {
+            if (confirm("Are you sure you want to remove this wallpaper from the category?")) {
+                $.ajax({
+                    url: '@Url.Action("RemoveWallpaperFromCategory", "Category")',
+                    type: 'POST',
+                    data: { wallpaperId: wallpaperId, categoryId: @Model.Id },
+                    success: function (result) {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert("There was an error while removing the wallpaper.");
+                        }
+                    },
+                    error: function () {
+                        alert("There was an error while removing the wallpaper.");
+                    }
+                });
+            }
+        }
+    </script>
+}

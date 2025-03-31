@@ -1,0 +1,61 @@
+﻿@model List<Proekt_IT.Models.Category>
+
+@{
+    ViewBag.Title = "Categories";
+}
+
+<h2>Your Categories</h2>
+
+<p>
+    <a href="/Category/Create" class="btn btn-primary">Create a new category</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Category name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr data-category-id="@category.Id">
+                <td>@category.Name</td>
+                <td>
+                    <a href="/Category/AddWallpapersToCategory?categoryId=@category.Id" class="btn btn-primary">
+                        Add Wallpaper
+                    </a>
+                    <a href="/Category/ViewCategory?categoryId=@category.Id" class="btn btn-secondary">
+                        View Wallpapers
+                    </a>
+                    <button class="btn btn-danger delete-category" data-id="@category.Id">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".delete-category").on("click", function () {
+                var categoryId = $(this).data("id");
+                if (confirm("Are you sure you want to delete this category?")) {
+                    $.ajax({
+                        url: '/Category/Delete',
+                        type: 'POST',
+                        data: { id: categoryId },
+                        success: function (result) {
+                            $("tr[data-category-id='" + categoryId + "']").remove();
+                        },
+                        error: function () {
+                            alert("There was an error deleting the category.");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

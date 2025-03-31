@@ -1,0 +1,201 @@
+﻿@model List<Proekt_IT.Models.Wallpaper>
+
+@{
+    ViewBag.Title = "Search Results";
+    string query = ViewBag.Query ?? "";
+    int currentPage = ViewBag.Page ?? 1;
+}
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<div class="container mt-5">
+    <!-- Search Form -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-4">
+            @using (Html.BeginForm("WallpaperSearch", "Wallpaper", FormMethod.Post, new { @class = "search-form" }))
+            {
+                <div class="input-group">
+                    <input type="text" name="query" class="form-control" placeholder="Enter Search Query" value="@query" />
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(query) && Model != null && Model.Any())
+    {
+        <h2 class="text-center mb-4">Results for: "@query"</h2>
+        <h4 class="text-center mb-4">Page: @currentPage</h4>
+
+        <div class="row">
+            @foreach (var wallpaper in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card border-light shadow-sm">
+                        @using (Html.BeginForm("GetJson", "Wallpaper", FormMethod.Post, new { @class = "d-block" }))
+                        {
+                            @Html.Hidden("id", wallpaper.Id)
+                            <input type="image" src="@wallpaper.ImageUrl" alt="Wallpaper Image" class="card-img-top img-fluid" style="height: 200px; object-fit: cover;" />
+                        }
+                        <div class="card-body text-center">
+                            <button type="button" class="like-button btn" data-id="@wallpaper.Id">
+                                <i class="fa fa-star @((wallpaper.IsLiked) ? "liked" : "unliked")"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="pagination-container text-center mt-4">
+            <div class="btn-group" role="group">
+                @if (currentPage > 1)
+                {
+                    using (Html.BeginForm("WallpaperSearch", "Wallpaper", FormMethod.Post, new { @class = "pagination-form" }))
+                    {
+                        @Html.Hidden("query", query)
+                        @Html.Hidden("page", currentPage - 1)
+                        <button type="submit" class="btn btn-secondary pagination-previous">Previous</button>
+                    }
+                }
+                else
+                {
+                    <button class="btn btn-secondary pagination-previous" disabled>Previous</button>
+                }
+
+                <span class="btn btn-outline-secondary current-page">Page @currentPage</span>
+
+                @using (Html.BeginForm("WallpaperSearch", "Wallpaper", FormMethod.Post, new { @class = "pagination-form" }))
+                {
+                    @Html.Hidden("query", query)
+                    @Html.Hidden("page", currentPage + 1)
+                    <button type="submit" class="btn btn-secondary pagination-next">Next</button>
+                }
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(query))
+    {
+        <p class="text-center">No wallpapers found for "@query".</p>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".like-button").on("click", function () {
+                var button = $(this);
+                var wallpaperId = button.data("id");
+
+                $.ajax({
+                    url: "/Wallpaper/LikeWallpaper",
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ wallpaperId: wallpaperId }),
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.success) {
+                            var star = button.find("i");
+                            if (star.hasClass("liked")) {
+                                star.removeClass("liked").addClass("unliked");
+                            } else {
+                                star.removeClass("unliked").addClass("liked");
+                            }
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert("There was an error. In case you're not logged in, you have to log in to access this functionality.");
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .search-form {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px; 
+    }
+
+        .search-form .form-control {
+            border-radius: 0;
+            border-right: none;
+            flex: 1;
+        }
+
+        .search-form .btn {
+            border-radius: 0;
+            border-left: none;
+        }
+
+    .card {
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .card-img-top {
+        border-bottom: 1px solid #ddd;
+        transition: transform 0.3s ease;
+    }
+
+        .card-img-top:hover {
+            transform: scale(1.05);
+        }
+
+    .like-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+        .like-button .fa-star {
+            font-size: 24px;
+            transition: color 0.3s;
+        }
+
+            .like-button .fa-star.unliked {
+                color: gray;
+            }
+
+            .like-button .fa-star.liked {
+                color: gold;
+            }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+        .pagination-container .btn-group .btn {
+            border-radius: 20px;
+            padding: 10px 20px;
+            margin: 0 5px;
+        }
+
+        .pagination-container .btn-group .pagination-previous {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .pagination-container .btn-group .pagination-next {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .pagination-container .btn-group .current-page {
+            border-radius: 0;
+        }
+</style>

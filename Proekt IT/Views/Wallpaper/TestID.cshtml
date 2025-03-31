@@ -1,0 +1,13 @@
+﻿
+@{
+    ViewBag.Title = "TestID";
+}
+
+<h2>Enter ID for searching</h2>
+
+@using (Html.BeginForm("GetJson", "Wallpaper", FormMethod.Post))
+{
+    <label for="id">Enter ID:</label>
+    @Html.TextBox("id", ViewBag.ID as string)
+    <input type="submit" value="Submit" />
+}
